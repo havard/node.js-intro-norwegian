@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+  	<title>Node.js</title>
+  	<meta charset="utf-8" />
+  	<script type="text/javascript" src="presentation/remark-0.3.4.min.js"></script>
+  	<style type="text/css" media="screen">
+      @import url(http://fonts.googleapis.com/css?family=Ubuntu+Condensed);
+      body {
+        font-family: 'Ubuntu Condensed', sans-serif; 
+        font-size: 32px;
+      }
+      pre code {
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+        background-color: #333; color: #fff; padding: 1em 2em;
+      }
+      pre code .number, pre code.css .value, pre code.css .value .number { color: #0086F7; font-weight: bold; }
+      pre code .keyword, pre code .keymethods, pre code .tag .title { color: #FB660A; font-weight: bold; }
+      pre code.css .id, pre code .symbol { color: #FB660A; font-weight: normal; }
+      pre code .string, pre code .tag .value { color: #0091E2; }
+      pre code .function, pre code.css .class, pre code .preprocessor { color: #87A558; }
+      pre code .title { color: #DBEC62; font-weight: normal; }
+      pre code .params { color: #87A558; }
+      pre code .literal { }
+      ul { }
+
+      p > code, li > code { padding: 1px 4px; border: 1px solid #CCC; background-color: #EEE; }
+
+      #slideshow .slide .content { padding: 1em 3em; 
+        background: url(presentation/icon.png) no-repeat top right; }
+
+      #slideshow .slide > .splash { padding: 1em 3em; 
+        background: url(presentation/nodejs-splash.png) no-repeat center;
+        color: #EEE; text-align: right; vertical-align: bottom; }
+
+        #slideshow .slide > .left
+        {
+          text-align: left;
+        }
+
+      #slideshow .slide .content code { font-family: 'Consolas', monospace; font-size: 24px; }
+      code { position: relative; text-align: left; }
+      code .function {color: #900;}
+      iframe { border: 0; width: 100%; }
+    </style>
+  </head>
+  <body>
+  	<textarea id="source">
+.splash.center
+<big>Håvard Stranden</big><br/>
+<img src="presentation/twitter.png" width="40" valign="middle" /> <small>@havardstranden</small><br />
+<img src="presentation/web.png" width="40" valign="middle" /> <small>http://ox.no</small><br />
+
+---
+.center.middle
+
+## Skalering er vanskelig.
+
+---
+.center.middle
+## Mål:
+
+## Gjør det enkelt å lage applikasjoner med ekstrem ytelse.
+
+---
+.middle
+
+## Moderne computing-utfordringer
+
+* CPU-kjernen har nådd "maksimal" ytelse
+* I/O er dyrt
+
+---
+.center.middle 
+## Hvordan skalere videre?
+
+---
+
+.middle
+## Tråder 
+* C/C++, Java, C#, etc.
+* OS-nivå scheduler
+* Låsing som synkroniseringsmekanisme
+* Høy scheduling-kostnad
+
+---
+
+.middle
+## Grønne tråder/fibre 
+* Python `greenlet`, Ruby `Fiber`, etc.
+* User space
+* Unngår låsing (egentlig én tråd) 
+* Lavere scheduling-kostnad
+
+---
+.middle
+## Grønne prosesser 
+* Erlang
+* User space (ish)
+* Lav scheduling-kostnad
+* Unngår låsing (isolert fra hverandre)
+
+---
+.middle
+## OS event-looper
+* C/C++, `epoll`, `kqueue`, `IOCP`
+* Kernel space
+* Isolerte
+* Lav scheduling-kostnad
+
+---
+.center.middle
+
+![Trophy](presentation/trophy.jpg)
+
+## Event-loop
+
+---
+.middle
+## Skrive i C?
+
+* Slutte å tenke synkront
+* Ikke bland inn synkrone bibliotek
+* Ingen støttehjul
+
+---
+
+.center.middle
+## C er vanskelig.
+
+---
+
+.middle
+
+## Javascript?
+
+* Enkel synkroniseringsmodell (alt i én tråd)
+* Ikke-blokkerende (DOM)
+* Eventdrevet (`click`, `keydown`, etc.)
+* Closures er naturlig fit for callbacks
+* Ingen eksisterende I/O-modell
+* Betydelige ytelsesforbedringer siste 5 år
+
+---
+
+.center.middle
+
+![Node.js](presentation/nodejs.jpg)
+
+V8 + evented I/O
+
+---
+
+.center.middle 
+
+## Node.js er asynkront
+
+No-no:
+
+    .javascript
+    var contents = fs.readFileSync('foo.txt');
+    console.log(contents);
+
+Yes-yes:
+
+    .javascript
+    fs.readFile('foo.txt', function(contents) { 
+      console.log(contents); 
+    });
+
+---
+
+.center.middle
+
+## Events er innebygd
+
+Innebygde `events.EventEmitter` er vår venn:
+
+    .javascript
+    var file = fs.createReadStream('foo.txt');
+    file.on('data', function(data) {
+      console.log(data);
+    });
+
+---
+
+.center.middle
+
+## HTTP er enkelt
+
+    .javascript
+    require('http').createServer(
+      function(req, res) {
+        res.writeHead(200, 
+          {'Content-Type': 'text/plain'});
+        res.end('Hei, Trondheim!');
+    }).listen(1337);
+
+---
+
+.center.middle
+
+## TCP også
+
+    .javascript
+    require('net').createServer(function(socket) {
+      socket.write('Here be echo.');
+      socket.pipe(socket);
+    }).listen(1337);
+
+---
+.center.middle
+
+## Hvem bruker Node.js?
+
+<img src="presentation/whodunnit.png" width="100%" />
+
+---
+.middle
+
+## LinkedIn: Mobil
+
+* iOS
+* Android
+* WP7
+* m.linkedin.com
+
+---
+.middle
+## Shopify: Batman.js
+
+* Rapportering
+* Interne applikasjoner
+
+---
+.middle
+## Microsoft: Skyen
+
+* Node.js på Windows
+* Node.js på Azure
+* Node.js i IIS
+
+---
+
+.middle
+
+## Yahoo: Graceful degradation
+
+* Server-side-rendring for inkompatible klienter
+* Gjenbruke Javascript
+* En stor fremtid for Node.js
+
+---
+
+.middle
+## Hva med biblioteker?
+* "Operativsystemstøtte" innebygd
+  * Prosessmodell
+  * Filsystem
+  * Nettverk
+  * Krypto
+  * Etc.
+* NPM, pakkesystem for tredjeparts bibliotek
+
+---
+
+.center.middle
+<img src="presentation/npm.png" width="80%" />
+
+Innebygd pakkestyring for Node.js
+
+---
+.middle
+## NPM-kommandoer
+
+* `npm search <query>`
+* `npm install <pakke>`
+* `npm install -g <pakke>`
+* `npm uninstall <pakke>`
+
+---
+.middle
+## NPM-installeringer
+
+* Pakker lever i `node_modules`
+* Globale pakker i global `node_modules`
+* Kan installere biblioteker, binærfiler, etc.
+
+---
+.center.middle
+
+## Lage egne pakker
+
+`package.json`
+
+    .javascript
+    { "name": "openid",
+      "description": "OpenID 1.1/2.0 " +
+                     "library for node.js",
+      "author": { 
+        "name": "Håvard Stranden",
+        "email": "havard.stranden@gmail.com",
+        "web": "http://ox.no" },
+      "version": "0.4.1",
+      "engines" : [ "node >= 0.6.0" ]
+    }
+
+`npm publish`
+
+---
+
+.left.middle
+
+## Toolchain
+
+* Node
+* Teksteditor
+* Debugger
+  * node debug 
+  * node-inspector
+  * ndb
+* IDE
+  * Cloud9
+  * Jetbrains WebStorm
+
+---
+
+.center.middle
+## Demo: Drawnode
+
+---
+
+.center.middle
+<img src="presentation/javascriptize.jpg" width="80%" />
+
+---
+
+.center.middle
+
+<img src="presentation/newthing.jpg" width="80%" />
+---
+
+.middle
+## Callback hell
+
+    .javascript
+    fs.readFileSync('foo.txt', function(data) {
+      data.split('\n').forEach(function(i, line) {
+        line.split(' ').forEach(function(j, word) {
+          // ...
+        });
+      });
+    });
+
+---
+
+.middle
+
+## Manglende bibliotek
+
+* SQL?
+* ORM?
+* XML?
+
+---
+
+.middle
+## Endringstakt
+* Ustabilt API
+* Brukne komponenter
+* Lite fullskala-testing
+
+---
+
+.center.middle
+
+## Ting man lurer på
+
+<img src="presentation/philosoraptor.jpg" width="70%" />
+
+---
+
+.center.middle
+## Bør jeg bytte til Node.js?
+
+Nei.
+
+---
+
+.center.middle
+## Bør jeg vurdere Node.js som plattform?
+
+Ja, i noen tilfeller.
+
+---
+
+.middle
+## When to Node, kortversjon:
+
+* Høye ytelseskrav (sanntid)
+* Lite budsjett 
+* Tilgang på Javascript-kompetanse
+* Smalt domene
+
+---
+
+.middle
+## Hva med Netty, Twisted, EventMachine, etc.?
+
+* Har du Java-kompetanse og/eller Java-infrastruktur, bruk Netty.
+* Har du Python-kompetanse og/eller Python-infrastruktur, bruk Twisted.
+* Ser du mønsteret?
+
+---
+
+.center.middle
+
+## Men hva yter BEST?
+
+---
+
+.center.middle
+<br />
+<img src="presentation/event_timing.png" width="90%" />
+
+Ser du trenden?
+
+---
+
+.center.middle
+
+## Domenet og anvendelsen bestemmer.
+
+Build. Measure.
+
+## Kompetanse er dyrest.
+
+---
+.center.middle
+
+## Spørsmål?
+
+<br /><img src="presentation/twitter-blue.png" width="40" valign="middle" /> @havardstranden<br />
+<img src="presentation/web.png" width="30" valign="middle" /> http://ox.no
+  	</textarea>
+  	<div id="slideshow"></div>
+  </body>
+
+</html>
